@@ -11,7 +11,7 @@
 
 3. **Load the Extension**
    - Click "Load unpacked"
-   - Navigate to and select the `browser_extension/` folder
+   - Navigate to and select this folder (the extension folder)
    - Extension should appear in your list
 
 4. **Done!** ✅

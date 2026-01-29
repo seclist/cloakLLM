@@ -1,6 +1,6 @@
 #!/bin/bash
 # Script to create a clean ZIP file for Chrome Web Store submission
-# Run this from the browser_extension directory
+# Run this from the project root (the extension folder)
 
 # Remove old ZIP if exists
 rm -f cloak-v1.0.0.zip

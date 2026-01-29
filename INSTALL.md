@@ -2,7 +2,7 @@
 
 ## Step 1: Prepare the Extension
 
-1. Make sure all files are in the `browser_extension/` folder:
+1. Make sure all files are in this folder (the extension folder):
    - `manifest.json`
    - `cloak.js`
    - `content.js`
@@ -24,7 +24,7 @@ Or skip this step - the extension will work without icons.
 1. Open Chrome and go to `chrome://extensions/`
 2. Enable "Developer mode" (toggle in top right)
 3. Click "Load unpacked"
-4. Select the `browser_extension/` folder
+4. Select this folder
 5. The extension should now appear in your extensions list
 
 ## Step 4: Test It

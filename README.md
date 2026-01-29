@@ -10,7 +10,7 @@ Automatically anonymizes PII before sending to ChatGPT and restores it in respon
 1. Open Chrome: `chrome://extensions/`
 2. Enable "Developer mode" (top right)
 3. Click "Load unpacked"
-4. Select the `browser_extension/` folder
+4. Select this folder (the extension folder)
 
 ## How It Works
 
