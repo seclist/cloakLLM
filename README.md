@@ -1,3 +1,11 @@
+---
+
+> # 🔒 Looking for the browser version? Use ChatGPT safely with the Cloak Chrome Extension. [Download Here](https://getcloak.org)
+>
+> ---
+
+---
+
 # Cloak Browser Extension v1.0
 
 Automatically anonymizes PII before sending to ChatGPT and restores it in responses.
