@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Cloak - Auto-Anonymize for ChatGPT",
+  "version": "1.0.0",
+  "description": "Automatically anonymize PII before sending to ChatGPT and restore it in responses",
+  "icons": {
+    "16": "invisible.png",
+    "48": "invisible.png",
+    "128": "invisible.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://chat.openai.com/*",
+    "https://chatgpt.com/*",
+    "https://*.openai.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://chat.openai.com/*", "https://chatgpt.com/*"],
+      "js": ["cloak.js", "content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Cloak"
+  },
+  "homepage_url": "https://getcloak.org"
+}
