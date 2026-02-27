@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=340">
+    <title>Cloak – Protect PII</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --cloak-bg: #f4f7f6;
+            --cloak-surface: #fff;
+            --cloak-border: #dde4e2;
+            --cloak-accent: #0d9488;
+            --cloak-accent-hover: #0f766e;
+            --cloak-accent-glow: rgba(13, 148, 136, 0.2);
+            --cloak-text: #0f172a;
+            --cloak-text-soft: #334155;
+            --cloak-muted: #64748b;
+            --cloak-success: #0d9488;
+            --cloak-danger: #b91c1c;
+            --cloak-radius: 12px;
+            --cloak-radius-sm: 8px;
+            --cloak-focus-ring: 2px solid var(--cloak-accent);
+            --cloak-focus-offset: 2px;
+        }
+        
+        body {
+            width: 340px;
+            min-height: 320px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--cloak-bg);
+            color: var(--cloak-text);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        .header {
+            padding: 20px 22px;
+            background: var(--cloak-surface);
+            border-bottom: 1px solid var(--cloak-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--cloak-accent) 0%, #14b8a6 100%);
+            border-radius: 0 2px 2px 0;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-icon {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        
+        .header-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--cloak-text);
+            letter-spacing: -0.5px;
+        }
+        
+        .header-tagline {
+            font-size: 11px;
+            color: var(--cloak-muted);
+            font-weight: 500;
+            margin-top: 2px;
+            letter-spacing: 0.02em;
+        }
+        
+        .header-link {
+            font-size: 12px;
+            color: var(--cloak-muted);
+            text-decoration: none;
+            transition: color 0.2s, background 0.2s;
+            padding: 6px 10px;
+            border-radius: var(--cloak-radius-sm);
+        }
+        
+        .header-link:hover {
+            color: var(--cloak-accent);
+            background: rgba(13, 148, 136, 0.08);
+        }
+        
+        .content {
+            padding: 22px;
+        }
+        
+        .protection-section {
+            margin-bottom: 22px;
+        }
+        
+        .protection-label {
+            font-size: 11px;
+            color: var(--cloak-muted);
+            margin-bottom: 10px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+        }
+        
+        .toggle-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: var(--cloak-surface);
+            border-radius: var(--cloak-radius);
+            border: 1px solid var(--cloak-border);
+            cursor: pointer;
+            user-select: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        
+        .toggle-wrapper:hover {
+            border-color: var(--cloak-accent);
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.12);
+        }
+        
+        .toggle-wrapper.enabled {
+            border-left: 3px solid var(--cloak-accent);
+            padding-left: 17px;
+        }
+        
+        .toggle-wrapper:focus-visible,
+        .setting-toggle:focus-visible,
+        .setting-select:focus,
+        .header-link:focus-visible,
+        .footer-link:focus-visible,
+        .settings-header:focus-visible {
+            outline: var(--cloak-focus-ring);
+            outline-offset: var(--cloak-focus-offset);
+        }
+        
+        .toggle-wrapper:focus-visible {
+            outline-offset: 3px;
+        }
+        
+        .toggle-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--cloak-text);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            background: #cbd5e1;
+            border-radius: 14px;
+            transition: background 0.25s ease;
+            flex-shrink: 0;
+        }
+        
+        .toggle-switch.enabled {
+            background: var(--cloak-accent);
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .toggle-switch.enabled::after {
+            transform: translateX(20px);
+        }
+        
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding-left: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--cloak-success);
+            padding: 4px 10px;
+            background: rgba(13, 148, 136, 0.12);
+            border-radius: 999px;
+            border: 1px solid rgba(13, 148, 136, 0.25);
+        }
+        
+        .status-pill::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--cloak-success);
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.3);
+        }
+        
+        .status-pill.disabled {
+            color: var(--cloak-danger);
+            background: rgba(185, 28, 28, 0.1);
+            border-color: rgba(185, 28, 28, 0.2);
+        }
+        
+        .status-pill.disabled::before {
+            background: var(--cloak-danger);
+            box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.2);
+        }
+        
+        .status-text {
+            font-size: 12px;
+            color: var(--cloak-success);
+            font-weight: 500;
+        }
+        
+        .status-text.disabled {
+            color: var(--cloak-danger);
+        }
+        
+        .stats-text {
+            font-size: 11px;
+            color: var(--cloak-muted);
+            margin-top: 4px;
+            padding-left: 20px;
+        }
+        
+        .divider {
+            height: 1px;
+            background: var(--cloak-border);
+            margin: 20px 0;
+        }
+        
+        .settings-section {
+            margin-bottom: 18px;
+        }
+        
+        .settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: var(--cloak-radius-sm);
+            transition: background 0.15s ease;
+            min-height: 44px;
+        }
+        
+        .settings-header:hover {
+            background: rgba(0,0,0,0.04);
+        }
+        
+        .settings-header:focus-visible {
+            outline: var(--cloak-focus-ring);
+            outline-offset: var(--cloak-focus-offset);
+        }
+        
+        .settings-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--cloak-text);
+        }
+        
+        .settings-chevron {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cloak-muted);
+            font-size: 10px;
+            transition: transform 0.25s ease;
+        }
+        
+        .settings-header.collapsed .settings-chevron {
+            transform: rotate(-90deg);
+        }
+        
+        .settings-quick {
+            margin-bottom: 12px;
+        }
+        
+        .settings-list {
+            list-style: none;
+            max-height: 260px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--cloak-border) transparent;
+        }
+        
+        .settings-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .settings-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .settings-list::-webkit-scrollbar-thumb {
+            background: var(--cloak-border);
+            border-radius: 3px;
+        }
+        
+        .settings-list::-webkit-scrollbar-thumb:hover {
+            background: var(--cloak-muted);
+        }
+        
+        .settings-body {
+            max-height: 420px;
+            overflow: hidden;
+            transition: max-height 0.35s ease, opacity 0.25s ease;
+            opacity: 1;
+        }
+        
+        .settings-header.collapsed + .settings-body {
+            max-height: 0;
+            opacity: 0;
+        }
+        
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            gap: 12px;
+            border-radius: var(--cloak-radius-sm);
+            transition: background 0.15s;
+            min-height: 44px;
+        }
+        
+        .setting-item:hover {
+            background: rgba(0,0,0,0.02);
+        }
+        
+        .setting-label {
+            font-size: 13px;
+            color: var(--cloak-text);
+            flex: 1;
+        }
+        
+        .setting-toggle {
+            width: 44px;
+            height: 24px;
+            background: #cbd5e1;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.25s ease;
+            flex-shrink: 0;
+        }
+        
+        .setting-toggle.enabled {
+            background: var(--cloak-accent);
+        }
+        
+        .setting-toggle::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.25s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .setting-toggle.enabled::after {
+            transform: translateX(20px);
+        }
+        
+        .setting-select {
+            font-size: 13px;
+            padding: 6px 10px;
+            border: 1px solid var(--cloak-border);
+            border-radius: var(--cloak-radius-sm);
+            background: var(--cloak-surface);
+            color: var(--cloak-text);
+            min-width: 110px;
+        }
+        
+        .footer {
+            padding-top: 18px;
+            border-top: 1px solid var(--cloak-border);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 18px;
+        }
+        
+        .footer-link {
+            font-size: 12px;
+            color: var(--cloak-muted);
+            text-decoration: none;
+            padding: 4px 0;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-link:hover {
+            color: var(--cloak-accent);
+        }
+        
+        .footer-version {
+            font-size: 11px;
+            color: var(--cloak-muted);
+            margin-left: auto;
+        }
+        
+        .subsection-title {
+            font-size: 11px;
+            color: var(--cloak-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            margin-top: 6px;
+        }
+        
+        .pii-section {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--cloak-border);
+        }
+        
+        .pii-section-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        
+        .pii-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--cloak-text);
+        }
+        
+        .pii-section-desc {
+            font-size: 11px;
+            color: var(--cloak-muted);
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .pii-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .pii-action-link {
+            font-size: 12px;
+            color: var(--cloak-accent);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-family: inherit;
+            font-weight: 500;
+        }
+        
+        .pii-action-link:hover {
+            color: var(--cloak-accent-hover);
+            text-decoration: underline;
+        }
+        
+        .pii-action-link:focus-visible {
+            outline: var(--cloak-focus-ring);
+            outline-offset: 2px;
+        }
+        
+        .pii-list-wrap {
+            max-height: 240px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--cloak-border) transparent;
+            border: 1px solid var(--cloak-border);
+            border-radius: var(--cloak-radius-sm);
+            background: var(--cloak-surface);
+        }
+        
+        .pii-list-wrap::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .pii-list-wrap::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .pii-list-wrap::-webkit-scrollbar-thumb {
+            background: var(--cloak-border);
+            border-radius: 3px;
+        }
+        
+        .pii-category {
+            padding: 0 2px;
+        }
+        
+        .pii-category:first-child .pii-category-title {
+            margin-top: 8px;
+        }
+        
+        .pii-category-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--cloak-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 10px 12px 4px;
+            margin-top: 6px;
+        }
+        
+        .pii-category:first-child .pii-category-title {
+            margin-top: 0;
+            padding-top: 8px;
+        }
+        
+        .pii-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            gap: 10px;
+            min-height: 40px;
+            border-radius: 6px;
+            transition: background 0.15s;
+        }
+        
+        .pii-item:hover {
+            background: rgba(0,0,0,0.03);
+        }
+        
+        .pii-item .setting-label {
+            font-size: 13px;
+        }
+        
+        .pii-item .setting-toggle {
+            flex-shrink: 0;
+        }
+        
+        .paranoid-indicator {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: rgba(245, 158, 11, 0.2);
+            color: #d97706;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 8px;
+            padding-top: 1px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        .paranoid-indicator.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .paranoid-label-wrap {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .export-section {
+            margin-bottom: 18px;
+        }
+        
+        .export-section .subsection-title {
+            margin-bottom: 10px;
+        }
+        
+        .btn-export {
+            display: block;
+            width: 100%;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--cloak-accent);
+            background: rgba(13, 148, 136, 0.08);
+            border: 1px solid rgba(13, 148, 136, 0.3);
+            border-radius: var(--cloak-radius-sm);
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            font-family: inherit;
+        }
+        
+        .btn-export:hover {
+            background: rgba(13, 148, 136, 0.14);
+            border-color: var(--cloak-accent);
+        }
+        
+        .btn-export:focus-visible {
+            outline: var(--cloak-focus-ring);
+            outline-offset: var(--cloak-focus-offset);
+        }
+        
+        .btn-export:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .audit-summary {
+            font-size: 12px;
+            color: var(--cloak-muted);
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .audit-summary strong {
+            color: var(--cloak-text);
+        }
+        
+        .audit-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .audit-actions .btn-export {
+            flex: 1;
+            min-width: 0;
+            margin-bottom: 0;
+        }
+        
+        .btn-clear-audit {
+            font-size: 12px;
+            padding: 8px 12px;
+            color: var(--cloak-muted);
+            background: transparent;
+            border: 1px solid var(--cloak-border);
+            border-radius: var(--cloak-radius-sm);
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            font-family: inherit;
+        }
+        
+        .btn-clear-audit:hover {
+            color: var(--cloak-danger);
+            border-color: rgba(185, 28, 28, 0.4);
+            background: rgba(185, 28, 28, 0.06);
+        }
+        
+        .hint {
+            font-size: 10px;
+            color: var(--cloak-muted);
+            margin-top: 2px;
+        }
+        
+        .context-warning {
+            display: none;
+            margin-top: 10px;
+            padding: 8px 10px;
+            border: 1px solid #f59e0b;
+            background: rgba(245, 158, 11, 0.12);
+            color: #92400e;
+            border-radius: var(--cloak-radius-sm);
+            font-size: 11px;
+            line-height: 1.35;
+        }
+        
+        .context-warning.show {
+            display: block;
+        }
+        
+        .settings-meta {
+            margin-top: 8px;
+            font-size: 10px;
+            color: var(--cloak-muted);
+        }
+        
+        .pii-search {
+            width: 100%;
+            font-size: 12px;
+            padding: 7px 10px;
+            border: 1px solid var(--cloak-border);
+            border-radius: var(--cloak-radius-sm);
+            background: var(--cloak-surface);
+            color: var(--cloak-text);
+            margin-bottom: 10px;
+        }
+        
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        .error-message, .success-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+        
+        .success-message {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #16a34a;
+        }
+        
+        .error-message.show, .success-message.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .content {
+            animation: contentFadeIn 0.35s ease;
+        }
+        
+        @keyframes contentFadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="icon.png" alt="Cloak" class="header-icon">
+            <div class="header-titles">
+                <h1>Cloak</h1>
+                <span class="header-tagline">Protect PII on ChatGPT</span>
+            </div>
+        </div>
+        <a href="https://getcloak.org" target="_blank" class="header-link" aria-label="Visit website">Website</a>
+    </div>
+    
+    <div class="content">
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        
+        <div class="protection-section">
+            <label class="protection-label">Protection</label>
+            <div class="toggle-wrapper enabled" id="toggleContainer" tabindex="0" role="switch" aria-checked="true" aria-label="Protection enabled">
+                <span class="toggle-label">Enabled</span>
+                <div id="toggle" class="toggle-switch enabled"></div>
+            </div>
+            <div class="status-row" aria-live="polite">
+                <span class="status-pill" id="statusPill" aria-hidden="true">Active</span>
+                <span class="status-text sr-only" id="statusText">Protection is active</span>
+            </div>
+            <div class="stats-text" id="statsText"></div>
+            <div class="context-warning" id="contextWarning">Extension reloaded. Refresh your ChatGPT tab to re-enable Cloak protection.</div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="settings-section">
+            <div class="settings-header" id="settingsHeader" tabindex="0" role="button" aria-expanded="true" aria-controls="settingsBody">
+                <span class="settings-title" id="settingsTitle">Settings</span>
+                <span class="settings-chevron" aria-hidden="true">▼</span>
+            </div>
+            <div class="settings-body" id="settingsBody">
+                <div class="settings-quick">
+                    <div class="setting-item">
+                        <span class="setting-label" title="When to show toast messages (e.g. when PII is anonymized).">Notifications</span>
+                        <select id="notificationLevel" class="setting-select" aria-label="Notification level">
+                            <option value="all">All</option>
+                            <option value="errors">Errors only</option>
+                            <option value="none">None</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label" title="Controls toast size on the page.">Notification style</span>
+                        <select id="notificationStyle" class="setting-select" aria-label="Notification style">
+                            <option value="default">Default</option>
+                            <option value="compact">Compact</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label" title="Shows a small 'Cloak' badge on the ChatGPT page when protection is on.">Page indicator</span>
+                        <div class="setting-toggle" id="pageIndicatorToggle" tabindex="0" role="switch" aria-label="Show page indicator"></div>
+                    </div>
+                    <div class="setting-item">
+                        <span class="paranoid-label-wrap">
+                            <span class="paranoid-indicator" id="paranoidIndicator" aria-hidden="true" title="Paranoid mode is on">!</span>
+                            <span class="setting-label" title="Catches more PII (e.g. 9-digit SSN, 10-digit phone) with a higher chance of false positives.">Paranoid mode</span>
+                        </span>
+                        <div class="setting-toggle" id="paranoidToggle" tabindex="0" role="switch" aria-label="Paranoid mode"></div>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label" title="Record anonymization events (counts by type, no PII) for export.">Audit log</span>
+                        <div class="setting-toggle" id="auditLogToggle" tabindex="0" role="switch" aria-label="Audit log"></div>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label" title="When enabled, Cloak will not anonymize text inside fenced Markdown code blocks.">Skip fenced code blocks</span>
+                        <div class="setting-toggle" id="skipCodeBlocksToggle" tabindex="0" role="switch" aria-label="Skip fenced code blocks"></div>
+                    </div>
+                    <div class="hint">Audit log powers activity status and JSON/CSV export.</div>
+                </div>
+                <div class="pii-section">
+                    <div class="pii-section-head">
+                        <span class="pii-section-title">What to anonymize</span>
+                    </div>
+                    <p class="pii-section-desc">Choose which types of data to redact before sending to ChatGPT.</p>
+                    <input type="search" id="piiSearch" class="pii-search" placeholder="Search PII types..." aria-label="Search anonymization types">
+                    <div class="pii-actions">
+                        <button type="button" class="pii-action-link" id="piiAllOn" aria-label="Enable all types">All on</button>
+                        <button type="button" class="pii-action-link" id="piiAllOff" aria-label="Disable all types">All off</button>
+                    </div>
+                    <div class="pii-list-wrap" id="piiListContainer" role="list">
+                        <!-- Categories and toggles populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="export-section">
+            <div class="subsection-title">Export</div>
+            <button type="button" class="btn-export" id="exportConversationBtn" aria-label="Export current conversation with PII redacted">Export conversation (redacted)</button>
+            <div class="subsection-title" style="margin-top: 14px;">Audit log</div>
+            <div class="audit-summary" id="auditLogSummary">Loading…</div>
+            <div class="audit-actions">
+                <select id="auditLogRange" class="setting-select" aria-label="Date range for export" style="min-width: 100px;">
+                    <option value="all">All</option>
+                    <option value="7d">Last 7 days</option>
+                    <option value="30d">Last 30 days</option>
+                </select>
+                <button type="button" class="btn-export" id="exportAuditLogJsonBtn" aria-label="Export audit log as JSON">JSON</button>
+                <button type="button" class="btn-export" id="exportAuditLogCsvBtn" aria-label="Export audit log as CSV">CSV</button>
+            </div>
+            <button type="button" class="btn-clear-audit" id="clearAuditLogBtn" aria-label="Clear audit log">Clear log</button>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="settings-section" id="debugSection">
+            <div class="setting-item">
+                <span class="setting-label" style="font-weight: 500;" title="Logs anonymization and restore activity in the browser console (F12).">Debug Mode</span>
+                        <div class="setting-toggle" id="debugToggle" tabindex="0" role="switch" aria-label="Debug mode"></div>
+            </div>
+                    <div class="setting-item">
+                        <span class="setting-label" style="font-weight: 500;" title="Runs a local sample through Cloak detection.">Test anonymization</span>
+                        <button type="button" class="btn-clear-audit" id="runSelfTestBtn">Run test</button>
+                    </div>
+                    <div class="setting-item">
+                        <span class="setting-label" style="font-weight: 500;" title="Resets Cloak to default settings.">Reset settings</span>
+                        <button type="button" class="btn-clear-audit" id="resetSettingsBtn">Reset</button>
+                    </div>
+                    <div class="settings-meta" id="settingsMeta">Last updated: —</div>
+        </div>
+        
+        <div class="footer">
+            <a href="https://getcloak.org" target="_blank" class="footer-link">Website</a>
+            <a href="https://getcloak.org/help.html" target="_blank" class="footer-link">Help</a>
+            <a href="https://chromewebstore.google.com/detail/cnemamhbfgaapjiafemkciccgkgibfgf" target="_blank" class="footer-link" aria-label="Leave a review on Chrome Web Store">Review</a>
+            <a href="https://getcloak.org/privacy.html" target="_blank" class="footer-link">Privacy</a>
+            <span class="footer-version">v2.0</span>
+        </div>
+    </div>
+    
+    <script src="pii-types.js"></script>
+    <script src="cloak.js"></script>
+    <script src="popup.js"></script>
+</body>
+</html>
